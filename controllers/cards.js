@@ -22,7 +22,7 @@ module.exports.postCard = async (req, res) => {
     res.send(card);
   } catch (err) {
     if (err instanceof ValidationError) {
-      res.send({ message: err.message });
+      res.status(err.statusCode).send({ message: err.message });
     } else {
       res.status(500).send({ message: "На сервере произошла ошибка" });
     }
@@ -39,7 +39,7 @@ module.exports.deleteCard = (req, res) => {
     })
     .catch((err) => {
       if (err instanceof NotFoundError) {
-        res.send({ message: err.message });
+        res.status(err.statusCode).send({ message: err.message });
       } else {
         res.status(500).send({ message: "На сервере произошла ошибка" });
       }
@@ -64,7 +64,7 @@ module.exports.likeCard = (req, res) => {
     })
     .catch((err) => {
       if (err instanceof NotFoundError) {
-        res.send({ message: err.message });
+        res.status(err.statusCode).send({ message: err.message });
       } else {
         res.status(500).send({ message: "На сервере произошла ошибка" });
       }
@@ -83,7 +83,7 @@ module.exports.dislikeCard = (req, res) => {
     })
     .catch((err) => {
       if (err instanceof NotFoundError) {
-        res.send({ message: err.message });
+        res.status(err.statusCode).send({ message: err.message });
       } else {
         res.status(500).send({ message: "На сервере произошла ошибка" });
       }
