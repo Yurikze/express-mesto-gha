@@ -1,5 +1,5 @@
 const Card = require("../models/card");
-const { NotFoundError, ValidationError } = require("../Error/Errors");
+const { NotFoundError, NotValidError } = require("../Error/Errors");
 
 module.exports.getCards = (req, res) => {
   Card.find({})
@@ -15,13 +15,17 @@ module.exports.postCard = async (req, res) => {
   const owner = req.user._id;
 
   try {
-    if (!name || !link) {
-      throw new ValidationError("Введены неверные данные карточки.");
+    // if (!name || !link) {
+    //   throw new NotValidError("Введены неверные данные карточки.");
+    // }
+    const card = await Card.create({ name, link, owner })
+    if (res.ok) {
+
+      res.send(card);
     }
-    const card = await Card.create({ name, link, owner });
-    res.send(card);
+     throw new NotValidError("Введены неверные данные карточки.")
   } catch (err) {
-    if (err instanceof ValidationError) {
+    if (err instanceof NotValidError) {
       res.status(err.statusCode).send({ message: err.message });
     } else {
       res.status(500).send({ message: "На сервере произошла ошибка" });
@@ -83,7 +87,9 @@ module.exports.dislikeCard = (req, res) => {
     })
     .catch((err) => {
       if (err instanceof NotFoundError) {
-        res.status(err.statusCode).send({ message: err.message });
+        res
+          .status(err.statusCode)
+          .send({ message: err.message, statusCode: err.statusCode });
       } else {
         res.status(500).send({ message: "На сервере произошла ошибка" });
       }

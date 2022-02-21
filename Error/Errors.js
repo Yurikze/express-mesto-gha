@@ -6,12 +6,12 @@ class NotFoundError extends Error {
   }
 }
 
-class ValidationError extends Error {
+class NotValidError extends Error {
   constructor(message) {
     super(message);
-    this.name = "ValidationError";
+    this.name = "NotValidError";
     this.statusCode = 400;
   }
 }
 
-module.exports = { NotFoundError, ValidationError };
+module.exports = { NotFoundError, NotValidError };
