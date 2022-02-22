@@ -29,5 +29,8 @@
     "body-parser": "^1.19.2",
     "express": "^4.17.3",
     "mongoose": "^6.2.2"
+  },
+  "prettier": {
+    "singleQuote": false
   }
 }

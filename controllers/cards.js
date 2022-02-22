@@ -1,12 +1,12 @@
-const Card = require("../models/card");
-const { NotFoundError, NotValidError } = require("../Error/Errors");
+const Card = require('../models/card');
+const { NotFoundError } = require('../Error/NotFoundError');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .populate("owner")
+    .populate('owner')
     .then((cards) => res.send({ data: cards }))
-    .catch((err) => {
-      res.status(500).send({ message: "На сервере произошла ошибка" });
+    .catch(() => {
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -15,84 +15,82 @@ module.exports.postCard = async (req, res) => {
   const owner = req.user._id;
   try {
     // if (!name || !link) {
-    //   throw new NotValidError("Введены неверные данные карточки.");
+    //   throw new NotValidError('Введены неверные данные карточки.');
     // }
     const card = await Card.create({ name, link, owner });
     res.status(200).send(card);
   } catch (err) {
-    if (err.name === "ValidationError") {
-      res.status(400).send({ message: "Некорректные данные" });
+    if (err.name === 'ValidationError') {
+      res.status(400).send({ message: 'Некорректные данные' });
     } else {
-      res.status(500).send({ message: "На сервере произошла ошибка" });
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
     }
   }
 };
 
 module.exports.deleteCard = (req, res) => {
-  console.log(1)
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
-      console.log(card)
       if (!card) {
-        throw new NotFoundError("Карточка с указанным id не найдена");
+        throw new NotFoundError('Карточка с указанным id не найдена');
       }
       res.send({ data: card });
     })
     .catch((err) => {
       if (err instanceof NotFoundError) {
         res.status(err.statusCode).send({ message: err.message });
-      } else if (err.name === "CastError") {
-        res.status(400).send({ message: "Некорректые данные карточки" });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Некорректые данные карточки' });
       } else {
-        res.status(500).send({ message: "На сервере произошла ошибка" });
+        res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
     });
 };
 
 module.exports.likeCard = (req, res) => {
-  const cardId = req.params.cardId;
+  const { cardId } = req.params;
   const userId = req.user._id;
   Card.findByIdAndUpdate(
     cardId,
     {
       $addToSet: { likes: userId },
     },
-    { new: true }
+    { new: true },
   )
     .then((card) => {
       if (!card) {
-        throw new NotFoundError("Карточка с указанным id не найдена");
+        throw new NotFoundError('Карточка с указанным id не найдена');
       }
       res.status(200).send(card);
     })
     .catch((err) => {
       if (err instanceof NotFoundError) {
         res.status(err.statusCode).send({ message: err.message });
-      } else if (err.name === "CastError") {
-        res.status(400).send({ message: "Некорректые данные карточки" });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Некорректые данные карточки' });
       } else {
-        res.status(500).send({ message: "На сервере произошла ошибка" });
+        res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
     });
 };
 
 module.exports.dislikeCard = (req, res) => {
-  const cardId = req.params.cardId;
+  const { cardId } = req.params;
   const userId = req.user._id;
   Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true })
     .then((card) => {
       if (!card) {
-        throw new NotFoundError("Карточка с указанным id не найдена");
+        throw new NotFoundError('Карточка с указанным id не найдена');
       }
       res.send({ data: card });
     })
     .catch((err) => {
       if (err instanceof NotFoundError) {
         res.status(err.statusCode).send({ message: err.message });
-      } else if (err.name === "CastError") {
-        res.status(400).send({ message: "Некорректые данные карточки" });
+      } else if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Некорректые данные карточки' });
       } else {
-        res.status(500).send({ message: "На сервере произошла ошибка" });
+        res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
     });
 };
