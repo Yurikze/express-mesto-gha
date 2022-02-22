@@ -13,20 +13,15 @@ module.exports.getCards = (req, res) => {
 module.exports.postCard = async (req, res) => {
   const { name, link } = req.body;
   const owner = req.user._id;
-
   try {
     // if (!name || !link) {
     //   throw new NotValidError("Введены неверные данные карточки.");
     // }
     const card = await Card.create({ name, link, owner })
-    if (res.ok) {
-
-      res.status(200).send(card._id);
-    }
-     throw new NotValidError("Введены неверные данные карточки.")
+    res.status(200).send(card._id);
   } catch (err) {
-    if (err instanceof NotValidError) {
-      res.status(err.statusCode).send({ message: err.message });
+    if (err.name === "ValidationError") {
+      res.status(400).send({ message: "Некорректные данные" });
     } else {
       res.status(500).send({ message: "На сервере произошла ошибка" });
     }
