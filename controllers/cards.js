@@ -21,7 +21,7 @@ module.exports.postCard = async (req, res) => {
     const card = await Card.create({ name, link, owner })
     if (res.ok) {
 
-      res.send(card);
+      res.status(200).send(card._id);
     }
      throw new NotValidError("Введены неверные данные карточки.")
   } catch (err) {
