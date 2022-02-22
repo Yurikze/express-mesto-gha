@@ -17,8 +17,8 @@ module.exports.postCard = async (req, res) => {
     // if (!name || !link) {
     //   throw new NotValidError("Введены неверные данные карточки.");
     // }
-    const card = await Card.create({ name, link, owner })
-    res.status(200).send(card._id);
+    const card = await Card.create({ name, link, owner });
+    res.status(200).send(card);
   } catch (err) {
     if (err.name === "ValidationError") {
       res.status(400).send({ message: "Некорректные данные" });
@@ -29,8 +29,10 @@ module.exports.postCard = async (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
+  console.log(1)
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
+      console.log(card)
       if (!card) {
         throw new NotFoundError("Карточка с указанным id не найдена");
       }
@@ -39,6 +41,8 @@ module.exports.deleteCard = (req, res) => {
     .catch((err) => {
       if (err instanceof NotFoundError) {
         res.status(err.statusCode).send({ message: err.message });
+      } else if (err.name === "CastError") {
+        res.status(400).send({ message: "Некорректые данные карточки" });
       } else {
         res.status(500).send({ message: "На сервере произошла ошибка" });
       }
@@ -59,11 +63,13 @@ module.exports.likeCard = (req, res) => {
       if (!card) {
         throw new NotFoundError("Карточка с указанным id не найдена");
       }
-      res.send({ data: card });
+      res.status(200).send(card);
     })
     .catch((err) => {
       if (err instanceof NotFoundError) {
         res.status(err.statusCode).send({ message: err.message });
+      } else if (err.name === "CastError") {
+        res.status(400).send({ message: "Некорректые данные карточки" });
       } else {
         res.status(500).send({ message: "На сервере произошла ошибка" });
       }
@@ -82,9 +88,9 @@ module.exports.dislikeCard = (req, res) => {
     })
     .catch((err) => {
       if (err instanceof NotFoundError) {
-        res
-          .status(err.statusCode)
-          .send({ message: err.message, statusCode: err.statusCode });
+        res.status(err.statusCode).send({ message: err.message });
+      } else if (err.name === "CastError") {
+        res.status(400).send({ message: "Некорректые данные карточки" });
       } else {
         res.status(500).send({ message: "На сервере произошла ошибка" });
       }
