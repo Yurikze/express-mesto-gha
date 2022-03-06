@@ -1,6 +1,30 @@
+const { NODE_ENV, JWT_SECRET } = process.env;
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { NotFoundError } = require('../Error/NotFoundError');
 const { NotValidError } = require('../Error/NotValidError');
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        NODE_ENV ? JWT_SECRET : 'dev-secret',
+        { expiresIn: '7d' },
+      );
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+        })
+        .end();
+    })
+    .catch((err) => {
+      res.status(401).send({ message: err.message });
+    });
+};
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -26,17 +50,23 @@ module.exports.getUser = async (req, res) => {
   }
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'На сервере произошла ошибка' });
-      }
+module.exports.createUser = async (req, res) => {
+  const {
+    email, password, name, about, avatar,
+  } = req.body;
+  try {
+    const hashPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      email, password: hashPassword, name, about, avatar,
     });
+    res.status(200).send(user);
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      res.status(400).send({ message: 'Некорректные данные' });
+    } else {
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    }
+  }
 };
 
 module.exports.updateUserInfo = async (req, res) => {
