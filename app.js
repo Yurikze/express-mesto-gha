@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const { NotFoundError } = require('./Error/NotFoundError');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const error = require('./middlewares/error');
 
 const { PORT = 3000 } = process.env;
 
@@ -25,15 +26,15 @@ app.post('/signup', createUser);
 app.use('/users', auth, require('./routes/users'));
 app.use('/cards', auth, require('./routes/cards'));
 
-app.use('*', (req, res) => {
+app.use('*', (req, res, next) => {
   try {
     throw new NotFoundError('Страница не найдена');
   } catch (err) {
-    if (err instanceof NotFoundError) {
-      res.status(404).send({ message: err.message });
-    }
+    next(err);
   }
 });
+
+app.use(error);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
