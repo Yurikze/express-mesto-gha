@@ -26,6 +26,25 @@ module.exports.login = (req, res) => {
     });
 };
 
+module.exports.getMe = async (req, res) => {
+  const userId = req.user._id;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new NotFoundError('Пользователь с id не найден');
+    }
+    res.status(200).send({ data: user });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      res.status(error.statusCode).send({ message: error.message });
+    } else if (error.name === 'CastError') {
+      res.status(400).send({ message: 'Некорректный id пользователя' });
+    } else {
+      res.status(500).send({ message: 'На сервере произошла ошибка' });
+    }
+  }
+}
+
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
