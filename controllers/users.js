@@ -43,7 +43,7 @@ module.exports.getMe = async (req, res) => {
       res.status(500).send({ message: 'На сервере произошла ошибка' });
     }
   }
-}
+};
 
 module.exports.getUsers = (req, res) => {
   User.find({})
