@@ -14,9 +14,6 @@ module.exports.postCard = async (req, res) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   try {
-    // if (!name || !link) {
-    //   throw new NotValidError('Введены неверные данные карточки.');
-    // }
     const card = await Card.create({ name, link, owner });
     res.status(200).send(card);
   } catch (err) {
@@ -29,12 +26,16 @@ module.exports.postCard = async (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
         throw new NotFoundError('Карточка с указанным id не найдена');
       }
-      res.send({ data: card });
+      if (card.owner._id.toString() !== '123') {
+        throw new Error('Вы не можете удалить чужую карточку');
+      }
+      card.remove();
+      res.status(200).send({ data: card, message: 'Карточка успешно удалена' });
     })
     .catch((err) => {
       if (err instanceof NotFoundError) {
