@@ -2,10 +2,10 @@ const Card = require('../models/card');
 const { NotFoundError } = require('../Error/NotFoundError');
 const { NotValidError } = require('../Error/NotValidError');
 const { CastError } = require('../Error/CastError');
+const { ForbiddenError } = require('../Error/ForbiddenError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .populate('owner')
     .then((cards) => res.send({ data: cards }))
     .catch(next);
 };
@@ -32,7 +32,7 @@ module.exports.deleteCard = (req, res, next) => {
         throw new NotFoundError('Карточка с указанным id не найдена');
       }
       if (card.owner._id.toString() !== req.user._id.toString()) {
-        throw new NotValidError('Вы не можете удалить чужую карточку');
+        throw new ForbiddenError('Вы не можете удалить чужую карточку');
       }
       card.remove();
       res.status(200).send({ data: card, message: 'Карточка успешно удалена' });
