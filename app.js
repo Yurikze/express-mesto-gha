@@ -8,14 +8,11 @@ const { NotFoundError } = require('./Error/NotFoundError');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const error = require('./middlewares/error');
+const { validateUrl } = require('./utils/utils');
 
 const { PORT = 3000 } = process.env;
 
 const app = express();
-
-const method = () => {
-  console.log(132);
-};
 
 app.use(cookieParser());
 
@@ -31,11 +28,6 @@ app.post('/signin', celebrate({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
-}), celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required(),
-  }),
 }), login);
 app.post('/signup', celebrate({
   body: Joi.object().keys({
@@ -43,7 +35,7 @@ app.post('/signup', celebrate({
     password: Joi.string().required().min(8),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().custom(method, 'custom validation'),
+    avatar: Joi.string().custom(validateUrl, 'custom validation'),
   }),
 }), createUser);
 app.use('/users', auth, require('./routes/users'));

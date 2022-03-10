@@ -43,10 +43,10 @@ module.exports.getMe = async (req, res, next) => {
   }
 };
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'На сервере произошла ошибка' }));
+    .catch(next);
 };
 
 module.exports.getUser = async (req, res, next) => {
@@ -74,7 +74,14 @@ module.exports.createUser = async (req, res, next) => {
     const user = await User.create({
       email, password: hashPassword, name, about, avatar,
     });
-    res.status(200).send(user);
+    res.status(200).send({
+      user: {
+        email: user.email,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+      },
+    });
   } catch (err) {
     if (err.name === 'MongoServerError' && err.code === 11000) {
       next(new ConflictError('Такой Email существует'));
